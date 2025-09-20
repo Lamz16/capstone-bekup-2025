@@ -1,8 +1,8 @@
 import 'package:capstone/screen/chatbot/chatbot_screen.dart';
 import 'package:capstone/screen/home/chatbot_icon.dart';
 import 'package:capstone/screen/home/filter_modal.dart';
-import 'package:capstone/screen/widget/build_enhanced_card.dart';
-import 'package:capstone/screen/widget/search_filter_header.dart';
+import 'package:capstone/widget/build_card.dart';
+import 'package:capstone/widget/search_filter_header.dart';
 import 'package:capstone/style/colors.dart';
 import 'package:capstone/style/typography.dart';
 import 'package:flutter/material.dart';
@@ -175,11 +175,11 @@ class _HomeScreenState extends State<HomeScreen> {
               delegate: SliverChildBuilderDelegate(
                 (context, index) => Padding(
                   padding: const EdgeInsets.only(bottom: 16),
-                  child: buildEnhancedCard(
+                  child: buildCard(
                     context,
                     index,
                     theme: theme,
-                    isDarkMode: isDarkMode, // ⬅️ kirim flag
+                    isDarkMode: isDarkMode,
                   ),
                 ),
                 childCount: 10,
@@ -192,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const ChatBotScreen()),
+            MaterialPageRoute(builder: (context) => const ChatbotScreen()),
           );
         },
       ),

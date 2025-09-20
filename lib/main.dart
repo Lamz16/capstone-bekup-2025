@@ -1,14 +1,18 @@
+// main.dart - Updated Integration
 import 'package:capstone/firebase_options.dart';
+import 'package:capstone/provider/gemini_provider.dart';
 import 'package:capstone/provider/theme_provider.dart';
 import 'package:capstone/screen/bottom_navigation.dart';
+import 'package:capstone/screen/chatbot/chatbot_screen.dart';
 import 'package:capstone/screen/login/login_screen.dart';
 import 'package:capstone/screen/setting/setting_screen.dart';
+import 'package:capstone/service/gemini_service.dart';
 import 'package:capstone/utils/auth_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MainApp());
@@ -19,31 +23,61 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => ThemeProvider()..loadTheme(),
+    return MultiProvider(
+      providers: [
+        Provider<GeminiService>(create: (_) => GeminiService()),
+
+        ChangeNotifierProvider<GeminiProvider>(
+          lazy: false,
+          create: (context) => GeminiProvider(context.read<GeminiService>()),
+        ),
+
+        ChangeNotifierProvider<GeminiProvider>(
+          lazy: false,
+          create: (context) =>
+              GeminiProvider(context.read<GeminiService>()),
+        ),
+
+        // Theme provider
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (_) => ThemeProvider()..loadTheme(),
+        ),
+      ],
       child: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, child) {
+        builder: (context, themeProvider, _) {
           return MaterialApp(
             title: 'WisataKu',
             debugShowCheckedModeBanner: false,
+            navigatorKey:
+                // Add this for snackbar
+                GeminiProvider.navigatorKey,
+            themeMode: themeProvider.themeMode,
             theme: ThemeData(
               primarySwatch: Colors.blue,
               brightness: Brightness.light,
               fontFamily: 'Inter',
               useMaterial3: true,
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: const Color(0xFF0077BE),
+                brightness: Brightness.light,
+              ),
             ),
             darkTheme: ThemeData(
               primarySwatch: Colors.blue,
               brightness: Brightness.dark,
               fontFamily: 'Inter',
               useMaterial3: true,
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: const Color(0xFF0077BE),
+                brightness: Brightness.dark,
+              ),
             ),
-            themeMode: themeProvider.themeMode,
             home: const AuthWrapper(),
             routes: {
-              '/login': (context) => const LoginScreen(),
-              '/home': (context) => const BottomNavigation(),
-              '/settings': (context) => const SettingsScreen(),
+              '/login': (_) => const LoginScreen(),
+              '/home': (_) => const BottomNavigation(),
+              '/settings': (_) => const SettingsScreen(),
+              '/enhanced-chat': (_) => const ChatbotScreen(),
             },
           );
         },

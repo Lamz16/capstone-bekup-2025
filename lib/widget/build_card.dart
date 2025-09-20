@@ -2,7 +2,7 @@ import 'package:capstone/screen/detail/detail_page.dart';
 import 'package:capstone/style/colors.dart';
 import 'package:flutter/material.dart';
 
-Widget buildEnhancedCard(
+Widget buildCard(
   BuildContext context,
   int index, {
   required ThemeData theme,

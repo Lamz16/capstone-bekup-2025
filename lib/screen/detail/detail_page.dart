@@ -1,7 +1,7 @@
-import 'package:capstone/screen/widget/header_section.dart';
-import 'package:capstone/screen/widget/info_card.dart';
-import 'package:capstone/screen/widget/nav_icon.dart';
-import 'package:capstone/screen/widget/review_widget.dart';
+import 'package:capstone/widget/header_section.dart';
+import 'package:capstone/widget/info_card.dart';
+import 'package:capstone/widget/nav_icon.dart';
+import 'package:capstone/widget/review_widget.dart';
 import 'package:capstone/style/colors.dart';
 import 'package:flutter/material.dart';
 

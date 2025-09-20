@@ -1,4 +1,4 @@
-import 'package:capstone/screen/widget/info_card.dart';
+import 'package:capstone/widget/info_card.dart';
 import 'package:capstone/style/colors.dart';
 import 'package:capstone/style/typography.dart';
 import 'package:flutter/material.dart';

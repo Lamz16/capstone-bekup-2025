@@ -1,740 +1,147 @@
-// chatbot_screen.dart - PERBAIKAN 4: Halaman chatbot baru yang modern dan elegan
-import 'package:capstone/style/colors.dart';
+import 'package:capstone/provider/gemini_provider.dart';
+import 'package:capstone/widget/chat_message_bubble.dart';
+import 'package:capstone/widget/quick_suggestions.dart';
+import 'package:capstone/widget/typing_indicator.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:capstone/style/colors.dart';
 
-class ChatBotScreen extends StatefulWidget {
-  const ChatBotScreen({super.key});
+class ChatbotScreen extends StatefulWidget {
+  static const path = "/enhanced-chat";
+
+  const ChatbotScreen({super.key});
 
   @override
-  State<ChatBotScreen> createState() => _ChatBotScreenState();
+  State<ChatbotScreen> createState() => _ChatbotScreenState();
 }
 
-class _ChatBotScreenState extends State<ChatBotScreen>
+class _ChatbotScreenState extends State<ChatbotScreen>
     with TickerProviderStateMixin {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final List<Message> _messages = [];
-  bool _isTyping = false;
-  late AnimationController _typingAnimationController;
-  late Animation<double> _typingAnimation;
+  final FocusNode _focusNode = FocusNode();
+  late AnimationController _fabAnimationController;
+  late Animation<double> _fabAnimation;
 
   @override
   void initState() {
     super.initState();
-    _typingAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
+    _fabAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    _typingAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(_typingAnimationController);
-
-    // Tambahkan pesan selamat datang
-    _addMessage(
-      "Halo! Saya WisataBot, asisten virtual untuk membantu Anda menemukan destinasi wisata terbaik di Indramayu dan sekitarnya. Silakan tanya apa saja!",
-      false,
+    _fabAnimation = CurvedAnimation(
+      parent: _fabAnimationController,
+      curve: Curves.easeInOut,
     );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _requestLocationPermission();
+      _fabAnimationController.forward();
+    });
+
+    _scrollController.addListener(() {
+      if (_scrollController.offset > 100) {
+        _fabAnimationController.forward();
+      } else {
+        _fabAnimationController.reverse();
+      }
+    });
   }
 
   @override
   void dispose() {
-    _typingAnimationController.dispose();
     _messageController.dispose();
     _scrollController.dispose();
+    _focusNode.dispose();
+    _fabAnimationController.dispose();
     super.dispose();
   }
 
-  void _addMessage(String text, bool isUser, {Widget? customWidget}) {
-    setState(() {
-      _messages.add(
-        Message(
-          text: text,
-          isUser: isUser,
-          timestamp: DateTime.now(),
-          customWidget: customWidget,
-        ),
-      );
-    });
-    _scrollToBottom();
+  void _requestLocationPermission() {
+    final provider = context.read<GeminiProvider>();
+    provider.getCurrentLocation();
   }
 
   void _scrollToBottom() {
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (_scrollController.hasClients) {
+    if (_scrollController.hasClients) {
+      Future.delayed(const Duration(milliseconds: 100), () {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
-      }
-    });
-  }
-
-  void _sendMessage() {
-    final text = _messageController.text.trim();
-    if (text.isEmpty) return;
-
-    _addMessage(text, true);
-    _messageController.clear();
-
-    // Simulasi bot sedang mengetik
-    setState(() {
-      _isTyping = true;
-    });
-    _typingAnimationController.repeat();
-
-    // Simulasi respons bot
-    Future.delayed(const Duration(seconds: 2), () {
-      setState(() {
-        _isTyping = false;
       });
-      _typingAnimationController.stop();
-
-      _generateBotResponse(text);
-    });
-  }
-
-  void _generateBotResponse(String userMessage) {
-    String response;
-    Widget? customWidget;
-
-    final lowerMessage = userMessage.toLowerCase();
-
-    if (lowerMessage.contains('pantai') || lowerMessage.contains('beach')) {
-      response =
-          "Pantai Karangsong adalah destinasi pantai terbaik di Indramayu! Berikut beberapa rekomendasi pantai untuk Anda:";
-      customWidget = _buildRecommendationCards([
-        {'name': 'Pantai Karangsong', 'type': 'Pantai', 'distance': '2.3 km'},
-        {'name': 'Pantai Tirtamaya', 'type': 'Pantai', 'distance': '5.1 km'},
-      ]);
-    } else if (lowerMessage.contains('museum') ||
-        lowerMessage.contains('sejarah')) {
-      response = "Ada beberapa tempat bersejarah menarik di sekitar Indramayu:";
-      customWidget = _buildRecommendationCards([
-        {'name': 'Museum Linggarjati', 'type': 'Museum', 'distance': '15.2 km'},
-        {'name': 'Keraton Kanoman', 'type': 'Sejarah', 'distance': '8.5 km'},
-      ]);
-    } else if (lowerMessage.contains('makanan') ||
-        lowerMessage.contains('kuliner')) {
-      response =
-          "Indramayu terkenal dengan kulinernya yang lezat! Berikut rekomendasi tempat makan:";
-      customWidget = _buildCulinaryCards();
-    } else if (lowerMessage.contains('hotel') ||
-        lowerMessage.contains('penginapan')) {
-      response = "Berikut beberapa pilihan penginapan terbaik di Indramayu:";
-      customWidget = _buildHotelCards();
-    } else {
-      response =
-          "Terima kasih atas pertanyaannya! Saya dapat membantu Anda mencari informasi tentang:\n\n• Destinasi wisata\n• Tempat makan\n• Hotel dan penginapan\n• Rute perjalanan\n• Tips wisata\n\nAda yang ingin Anda tanyakan lebih spesifik?";
     }
-
-    _addMessage(response, false, customWidget: customWidget);
   }
 
-  Widget _buildRecommendationCards(List<Map<String, String>> places) {
-    return Column(
-      children: places
-          .map(
-            (place) => Container(
-              margin: const EdgeInsets.only(top: 8),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppColors.oceanBlue.withOpacity(0.05), Colors.white],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.oceanBlue.withOpacity(0.2)),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppColors.oceanBlue,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.location_on,
-                      color: Colors.white,
-                      size: 16,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          place['name']!,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            Text(
-                              place['type']!,
-                              style: TextStyle(
-                                color: Colors.grey.shade600,
-                                fontSize: 12,
-                              ),
-                            ),
-                            const Text(
-                              ' • ',
-                              style: TextStyle(color: Colors.grey),
-                            ),
-                            Text(
-                              place['distance']!,
-                              style: TextStyle(
-                                color: Colors.grey.shade600,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    size: 16,
-                    color: Colors.grey.shade400,
-                  ),
-                ],
-              ),
-            ),
-          )
-          .toList(),
-    );
-  }
+  void _sendMessage([String? customMessage]) {
+    final message = customMessage ?? _messageController.text.trim();
+    if (message.isEmpty) return;
 
-  Widget _buildCulinaryCards() {
-    return Container(
-      margin: const EdgeInsets.only(top: 8),
-      child: Column(
-        children: [
-          _buildFoodItem(
-            "Nasi Lengko",
-            "Makanan khas Cirebon dengan tahu, tempe, dan sambal",
-          ),
-          _buildFoodItem(
-            "Empal Gentong",
-            "Gulai daging sapi pedas khas Cirebon",
-          ),
-          _buildFoodItem(
-            "Tahu Gejrot",
-            "Tahu goreng dengan kuah asam pedas manis",
-          ),
-        ],
-      ),
-    );
-  }
+    _messageController.clear();
+    _focusNode.unfocus();
 
-  Widget _buildFoodItem(String name, String description) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.orange.shade50, Colors.white],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.orange.shade200),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.orange.shade400,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(Icons.restaurant, color: Colors.white, size: 16),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  description,
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHotelCards() {
-    return Container(
-      margin: const EdgeInsets.only(top: 8),
-      child: Column(
-        children: [
-          _buildHotelItem(
-            "Hotel Horison Indramayu",
-            "Hotel bintang 4 dengan fasilitas lengkap",
-            "⭐ 4.2",
-          ),
-          _buildHotelItem(
-            "Aston Indramayu Hotel",
-            "Hotel modern di pusat kota",
-            "⭐ 4.0",
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHotelItem(String name, String description, String rating) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.purple.shade50, Colors.white],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.purple.shade200),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.purple.shade400,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(Icons.hotel, color: Colors.white, size: 16),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  description,
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  rating,
-                  style: TextStyle(
-                    color: Colors.orange.shade600,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.oceanBlue,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(Icons.smart_toy, color: Colors.white, size: 20),
-            ),
-            const SizedBox(width: 12),
-            const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'MyAI - WisataBot',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.navy,
-                  ),
-                ),
-                Text(
-                  'Asisten Wisata Virtual',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.normal,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.navy),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.more_vert, color: Colors.grey.shade600),
-            onPressed: () {
-              _showOptionsBottomSheet();
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Chat Messages
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(16),
-              itemCount: _messages.length + (_isTyping ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index == _messages.length && _isTyping) {
-                  return _buildTypingIndicator();
-                }
-
-                final message = _messages[index];
-                return _buildMessageBubble(message);
-              },
-            ),
-          ),
-
-          // Quick Suggestions (only show when no messages from user)
-          if (_messages.where((m) => m.isUser).isEmpty)
-            _buildQuickSuggestions(),
-
-          // Input Area
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, -5),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-                    child: TextField(
-                      controller: _messageController,
-                      decoration: const InputDecoration(
-                        hintText: 'Tanya tentang wisata di Indramayu...',
-                        hintStyle: TextStyle(color: Colors.grey),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 12,
-                        ),
-                      ),
-                      onSubmitted: (_) => _sendMessage(),
-                      textInputAction: TextInputAction.send,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.oceanBlue,
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  child: IconButton(
-                    onPressed: _sendMessage,
-                    icon: const Icon(Icons.send, color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMessageBubble(Message message) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Row(
-        mainAxisAlignment: message.isUser
-            ? MainAxisAlignment.end
-            : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (!message.isUser) ...[
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.oceanBlue,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Icon(Icons.smart_toy, color: Colors.white, size: 16),
-            ),
-            const SizedBox(width: 8),
-          ],
-          Flexible(
-            child: Column(
-              crossAxisAlignment: message.isUser
-                  ? CrossAxisAlignment.end
-                  : CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: message.isUser ? AppColors.oceanBlue : Colors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: const Radius.circular(20),
-                      topRight: const Radius.circular(20),
-                      bottomLeft: Radius.circular(message.isUser ? 20 : 4),
-                      bottomRight: Radius.circular(message.isUser ? 4 : 20),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Text(
-                    message.text,
-                    style: TextStyle(
-                      color: message.isUser ? Colors.white : Colors.black87,
-                      fontSize: 14,
-                      height: 1.4,
-                    ),
-                  ),
-                ),
-                if (message.customWidget != null) ...[
-                  const SizedBox(height: 8),
-                  message.customWidget!,
-                ],
-                const SizedBox(height: 4),
-                Text(
-                  _formatTime(message.timestamp),
-                  style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
-                ),
-              ],
-            ),
-          ),
-          if (message.isUser) ...[
-            const SizedBox(width: 8),
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: Colors.grey.shade300,
-              child: const Icon(Icons.person, color: Colors.white, size: 16),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTypingIndicator() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppColors.oceanBlue,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Icon(Icons.smart_toy, color: Colors.white, size: 16),
-          ),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-                bottomLeft: Radius.circular(4),
-                bottomRight: Radius.circular(20),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: AnimatedBuilder(
-              animation: _typingAnimation,
-              builder: (context, child) {
-                return Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildTypingDot(0),
-                    const SizedBox(width: 4),
-                    _buildTypingDot(1),
-                    const SizedBox(width: 4),
-                    _buildTypingDot(2),
-                  ],
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTypingDot(int index) {
-    return AnimatedBuilder(
-      animation: _typingAnimationController,
-      builder: (context, child) {
-        final animationValue =
-            (_typingAnimationController.value - (index * 0.2)).clamp(0.0, 1.0);
-        return Transform.scale(
-          scale: 0.8 + (0.4 * animationValue),
-          child: Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade400,
-              shape: BoxShape.circle,
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildQuickSuggestions() {
-    final suggestions = [
-      "Pantai terdekat dari sini",
-      "Tempat makan enak",
-      "Hotel recommended",
-      "Wisata sejarah",
-    ];
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Saran pertanyaan:',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade600,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: suggestions.map((suggestion) {
-              return GestureDetector(
-                onTap: () {
-                  _messageController.text = suggestion;
-                  _sendMessage();
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: AppColors.oceanBlue.withOpacity(0.3),
-                    ),
-                  ),
-                  child: Text(
-                    suggestion,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.oceanBlue,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
+    context.read<GeminiProvider>().sendMessage(message);
+    _scrollToBottom();
   }
 
   void _showOptionsBottomSheet() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: isDark ? Colors.grey[900] : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(
-              leading: const Icon(Icons.delete_outline),
-              title: const Text('Hapus Riwayat Chat'),
-              onTap: () {
-                Navigator.pop(context);
-                _clearChatHistory();
-              },
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-            ListTile(
-              leading: const Icon(Icons.info_outline),
-              title: const Text('Tentang MyAI - WisataBot'),
-              onTap: () {
+            const SizedBox(height: 20),
+            _buildBottomSheetItem(
+              context,
+              Icons.location_on,
+              'Perbarui Lokasi',
+              'Aktifkan lokasi untuk rekomendasi yang lebih akurat',
+              () {
+                Navigator.pop(context);
+                _requestLocationPermission();
+              },
+              isDark,
+            ),
+            _buildBottomSheetItem(
+              context,
+              Icons.delete_outline,
+              'Hapus Riwayat Chat',
+              'Bersihkan semua percakapan',
+              () {
+                Navigator.pop(context);
+                _showClearHistoryDialog();
+              },
+              isDark,
+            ),
+            _buildBottomSheetItem(
+              context,
+              Icons.info_outline,
+              'Tentang WisataBot',
+              'Informasi tentang asisten virtual',
+              () {
                 Navigator.pop(context);
                 _showAboutDialog();
               },
+              isDark,
             ),
           ],
         ),
@@ -742,23 +149,111 @@ class _ChatBotScreenState extends State<ChatBotScreen>
     );
   }
 
-  void _clearChatHistory() {
-    setState(() {
-      _messages.clear();
-      _addMessage(
-        "Riwayat chat telah dihapus. Saya siap membantu Anda lagi!",
-        false,
-      );
-    });
+  Widget _buildBottomSheetItem(
+    BuildContext context,
+    IconData icon,
+    String title,
+    String subtitle,
+    VoidCallback onTap,
+    bool isDark,
+  ) {
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: (isDark ? Colors.grey[700] : Colors.grey[100]),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(
+          icon,
+          color: isDark ? Colors.white : Colors.black87,
+          size: 20,
+        ),
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: isDark ? Colors.white : Colors.black87,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: TextStyle(
+          color: isDark ? Colors.grey[400] : Colors.grey[600],
+          fontSize: 12,
+        ),
+      ),
+      onTap: onTap,
+    );
+  }
+
+  void _showClearHistoryDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Hapus Riwayat Chat'),
+        content: const Text(
+          'Apakah Anda yakin ingin menghapus semua riwayat percakapan? Tindakan ini tidak dapat dibatalkan.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Batal', style: TextStyle(color: Colors.grey[600])),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              context.read<GeminiProvider>().clearHistory();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('Riwayat chat berhasil dihapus'),
+                  duration: const Duration(seconds: 2),
+                  backgroundColor: Colors.green,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              );
+            },
+            child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showAboutDialog() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Tentang MyAI - WisataBot'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(colors: AppColors.oceanGradient),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.smart_toy, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 12),
+            const Text('MyAI - WisataBot'),
+          ],
+        ),
         content: const Text(
-          'MyAI -WisataBot adalah asisten virtual yang membantu Anda menemukan destinasi wisata, kuliner, dan akomodasi terbaik di Indramayu dan sekitarnya.\n\nDibuat dengan teknologi AI untuk memberikan rekomendasi yang personal dan akurat.',
+          'MyAI - WisataBot adalah asisten virtual yang dibuat oleh Grup Capstone B25-PG002 untuk membantu wisatawan menemukan informasi pariwisata terbaik di Indonesia.\n\n'
+          '✨ Fitur Unggulan:\n'
+          '• Rekomendasi tempat wisata berdasarkan lokasi\n'
+          '• Informasi hotel dan penginapan terpercaya\n'
+          '• Kuliner khas daerah Indonesia\n'
+          '• Rute transportasi dan panduan perjalanan\n'
+          '• Informasi budaya dan sejarah lokal\n\n'
+          '🤖 Didukung oleh teknologi Google Gemini AI untuk memberikan rekomendasi yang akurat dan personal.',
+          style: TextStyle(height: 1.4),
         ),
         actions: [
           TextButton(
@@ -770,21 +265,394 @@ class _ChatBotScreenState extends State<ChatBotScreen>
     );
   }
 
-  String _formatTime(DateTime time) {
-    return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Scaffold(
+      resizeToAvoidBottomInset: true,
+      backgroundColor: isDark ? Colors.grey[900] : Colors.grey[50],
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: isDark ? Colors.grey[900] : Colors.white,
+        title: Row(
+          children: [
+            Hero(
+              tag: "chatbot-avatar",
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: AppColors.oceanGradient),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.oceanBlue.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.smart_toy,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'MyAI - WisataBot',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : AppColors.navy,
+                    ),
+                  ),
+                  Consumer<GeminiProvider>(
+                    builder: (context, provider, _) {
+                      if (provider.isLoading) {
+                        return Row(
+                          children: [
+                            SizedBox(
+                              width: 12,
+                              height: 12,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.green[600]!,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Sedang mengetik...',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.green[600],
+                                fontWeight: FontWeight.normal,
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+                      return Text(
+                        'Asisten Wisata Virtual',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark ? Colors.grey[400] : Colors.grey,
+                          fontWeight: FontWeight.normal,
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back,
+            color: isDark ? Colors.white : AppColors.navy,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          Consumer<GeminiProvider>(
+            builder: (context, provider, _) {
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                child: IconButton(
+                  icon: Stack(
+                    children: [
+                      Icon(
+                        provider.currentLocation != null
+                            ? Icons.location_on
+                            : Icons.location_off,
+                        color: provider.currentLocation != null
+                            ? Colors.green
+                            : (isDark ? Colors.grey[400] : Colors.grey[600]),
+                      ),
+                      if (provider.isLoading &&
+                          provider.currentLocation == null)
+                        Positioned.fill(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.oceanBlue,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  onPressed: _requestLocationPermission,
+                  tooltip: provider.currentLocation != null
+                      ? 'Lokasi aktif'
+                      : 'Aktifkan lokasi',
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.more_vert,
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
+            ),
+            onPressed: _showOptionsBottomSheet,
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Location Status Banner
+            Consumer<GeminiProvider>(
+              builder: (context, provider, _) {
+                if (provider.locationError != null) {
+                  return Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    color: Colors.orange[100],
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.warning_rounded,
+                          color: Colors.orange[800],
+                          size: 18,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Lokasi Tidak Tersedia',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.orange[800],
+                                ),
+                              ),
+                              Text(
+                                provider.locationError!,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.orange[700],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: _requestLocationPermission,
+                          child: Text(
+                            'Coba Lagi',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.orange[800],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+
+            // Chat Messages
+            Expanded(
+              child: Consumer<GeminiProvider>(
+                builder: (context, provider, _) {
+                  return ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(16),
+                    itemCount:
+                        provider.historyChats.length +
+                        (provider.isLoading ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index == provider.historyChats.length &&
+                          provider.isLoading) {
+                        return const TypingIndicator();
+                      }
+
+                      final message = provider.historyChats[index];
+                      return ChatMessageBubble(
+                        message: message,
+                        onRecommendationTap: () {
+                          // Handle recommendation tap - you can implement detailed view here
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text(
+                                'Fitur detail akan segera hadir!',
+                              ),
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+
+            // Quick Suggestions
+            Consumer<GeminiProvider>(
+              builder: (context, provider, _) {
+                final hasUserMessages = provider.historyChats.any(
+                  (message) => message.isUser,
+                );
+
+                if (hasUserMessages || provider.isLoading) {
+                  return const SizedBox.shrink();
+                }
+
+                return Flexible(
+                  child: SingleChildScrollView(
+                    child: QuickSuggestions(onSuggestionTap: _sendMessage),
+                  ),
+                );
+              },
+            ),
+
+            // Input Area
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.grey[900] : Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: isDark
+                        ? Colors.black.withOpacity(0.3)
+                        : Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, -5),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.grey[800] : Colors.grey[100],
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: isDark
+                                ? Colors.grey[600]!
+                                : Colors.grey[300]!,
+                          ),
+                        ),
+                        child: TextField(
+                          controller: _messageController,
+                          focusNode: _focusNode,
+                          maxLines: null,
+                          textInputAction: TextInputAction.send,
+                          onSubmitted: (_) => _sendMessage(),
+                          style: TextStyle(
+                            color: isDark ? Colors.white : Colors.black87,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Tanya tentang wisata Indonesia...',
+                            hintStyle: TextStyle(
+                              color: isDark ? Colors.grey[400] : Colors.grey,
+                            ),
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 12,
+                            ),
+                            prefixIcon: Icon(
+                              Icons.chat_bubble_outline,
+                              color: isDark ? Colors.grey[400] : Colors.grey,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Consumer<GeminiProvider>(
+                      builder: (context, provider, _) {
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: provider.isLoading
+                                  ? [Colors.grey, Colors.grey.shade400]
+                                  : AppColors.oceanGradient,
+                            ),
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color:
+                                    (provider.isLoading
+                                            ? Colors.grey
+                                            : AppColors.oceanBlue)
+                                        .withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: IconButton(
+                            onPressed: provider.isLoading
+                                ? null
+                                : () => _sendMessage(),
+                            icon: provider.isLoading
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.send_rounded,
+                                    color: Colors.white,
+                                  ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: Consumer<GeminiProvider>(
+        builder: (context, provider, _) {
+          if (provider.historyChats.length <= 1) return const SizedBox.shrink();
+
+          return ScaleTransition(
+            scale: _fabAnimation,
+            child: FloatingActionButton.small(
+              onPressed: _scrollToBottom,
+              backgroundColor: AppColors.oceanBlue,
+              child: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
+            ),
+          );
+        },
+      ),
+    );
   }
-}
-
-class Message {
-  final String text;
-  final bool isUser;
-  final DateTime timestamp;
-  final Widget? customWidget;
-
-  Message({
-    required this.text,
-    required this.isUser,
-    required this.timestamp,
-    this.customWidget,
-  });
 }
