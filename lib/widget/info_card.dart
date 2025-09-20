@@ -1,4 +1,4 @@
-import 'package:capstone/screen/widget/review_widget.dart';
+import 'package:capstone/widget/review_widget.dart';
 import 'package:capstone/style/colors.dart';
 import 'package:capstone/style/typography.dart';
 import 'package:flutter/material.dart';

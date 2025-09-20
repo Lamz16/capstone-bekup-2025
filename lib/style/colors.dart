@@ -2,6 +2,18 @@ import 'package:flutter/material.dart';
 
 /// 🎨 App Color Palette
 class AppColors {
+  // Gradient colors for enhanced UI
+  static const List<Color> oceanGradient = [
+    Color(0xFF0077BE),
+    Color(0xFF00A8E8),
+  ];
+
+  // Status colors
+  static const Color success = Color(0xFF4CAF50);
+  static const Color warning = Color(0xFFFF9800);
+  static const Color error = Color(0xFFD32F2F);
+  static const Color info = Color(0xFF2196F3);
+
   // Background
   static const Color whiteSoft = Color(0xFFF1F5FF);
 
