@@ -38,14 +38,6 @@
           }
         },
         {
-          "client_id": "909337229171-p13kq8fpu72fd6jmm964njaoq5mt9mkt.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.capstone",
-            "certificate_hash": "359cc51ffb7ae36758c1e64bcbcdd6ca5e7f761c"
-          }
-        },
-        {
           "client_id": "909337229171-a6lngbce4i3mubb27fc0m47rrfm5l6uh.apps.googleusercontent.com",
           "client_type": 3
         }
