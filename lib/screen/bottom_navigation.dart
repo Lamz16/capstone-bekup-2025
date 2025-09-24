@@ -1,4 +1,5 @@
 import 'package:capstone/screen/home/home_screen.dart';
+import 'package:capstone/screen/favorite/favorite_page.dart';
 import 'package:capstone/screen/setting/setting_screen.dart';
 import 'package:capstone/style/colors.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +20,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
     final List<Widget> pages = [
       const HomeScreen(),
       const Scaffold(),
-      const Scaffold(),
+      const FavoritePage(),
       const SettingsScreen(),
     ];
 

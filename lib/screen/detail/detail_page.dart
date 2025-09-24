@@ -5,6 +5,13 @@ import 'package:capstone/widget/review_widget.dart';
 import 'package:capstone/style/colors.dart';
 import 'package:flutter/material.dart';
 
+final List<String> sampleImages = [
+  "assets/images/wisata.webp",
+  "assets/images/wisata.webp",
+  "assets/images/wisata.webp",
+  "assets/images/wisata.webp",
+];
+
 class DetailScreen extends StatefulWidget {
   final Map<String, dynamic> destination;
 
@@ -244,7 +251,6 @@ class _DetailScreenState extends State<DetailScreen>
             ),
           ),
 
-          // Content dengan theme colors
           // Content dengan theme colors
           SliverToBoxAdapter(
             child: FadeTransition(
