@@ -1,6 +1,9 @@
+import 'package:capstone/model/tourism_recommendation.dart';
+import 'package:capstone/provider/favorite_provider.dart';
 import 'package:capstone/screen/detail/detail_page.dart';
 import 'package:capstone/style/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 Widget buildCard(
   BuildContext context,
@@ -158,24 +161,69 @@ Widget buildCard(
               Positioned(
                 bottom: 12,
                 right: 12,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+                child: Consumer<FavoriteProvider>(
+                  builder: (context, favoriteProvider, child) {
+                    final isFavorite = favoriteProvider.isFavorite(
+                      destination['name'] as String,
+                    );
+
+                    return Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: Icon(
-                    Icons.favorite_border,
-                    color: Colors.grey.shade600,
-                    size: 18,
-                  ),
+                      child: GestureDetector(
+                        onTap: () async {
+                          // Create TourismRecommendation object from destination data
+                          final tourismItem = TourismRecommendation(
+                            name: destination['name'] as String,
+                            type: RecommendationType.wisata,
+                            description: destination['description'] as String,
+                            distance: destination['distance'] as String,
+                            rating: destination['rating'].toString(),
+                            address: destination['location'] as String,
+                            priceRange: destination['price'] as String,
+                            openHours: destination['hours'] as String,
+                          );
+
+                          // Toggle favorite status
+                          await favoriteProvider.toggleFavorite(tourismItem);
+
+                          // Show feedback
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                isFavorite
+                                    ? 'Dihapus dari favorit'
+                                    : 'Ditambahkan ke favorit',
+                              ),
+                              backgroundColor: isFavorite
+                                  ? AppColors.error
+                                  : AppColors.oceanBlue,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        },
+                        child: Icon(
+                          isFavorite ? Icons.favorite : Icons.favorite_border,
+                          color: isFavorite ? Colors.red : Colors.grey.shade600,
+                          size: 18,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ],
