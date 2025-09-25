@@ -1,11 +1,12 @@
-// main.dart - Updated Integration
 import 'package:capstone/firebase_options.dart';
+import 'package:capstone/provider/favorite_provider.dart';
 import 'package:capstone/provider/gemini_provider.dart';
 import 'package:capstone/provider/theme_provider.dart';
 import 'package:capstone/screen/bottom_navigation.dart';
 import 'package:capstone/screen/chatbot/chatbot_screen.dart';
 import 'package:capstone/screen/login/login_screen.dart';
 import 'package:capstone/screen/setting/setting_screen.dart';
+
 import 'package:capstone/service/gemini_service.dart';
 import 'package:capstone/utils/auth_wrapper.dart';
 import 'package:flutter/material.dart';
@@ -34,13 +35,17 @@ class MainApp extends StatelessWidget {
 
         ChangeNotifierProvider<GeminiProvider>(
           lazy: false,
-          create: (context) =>
-              GeminiProvider(context.read<GeminiService>()),
+          create: (context) => GeminiProvider(context.read<GeminiService>()),
         ),
 
         // Theme provider
         ChangeNotifierProvider<ThemeProvider>(
           create: (_) => ThemeProvider()..loadTheme(),
+        ),
+
+        // Favorite provider
+        ChangeNotifierProvider<FavoriteProvider>(
+          create: (_) => FavoriteProvider(),
         ),
       ],
       child: Consumer<ThemeProvider>(
@@ -83,5 +88,5 @@ class MainApp extends StatelessWidget {
         },
       ),
     );
-  }
+  }8
 }

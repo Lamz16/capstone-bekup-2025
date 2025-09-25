@@ -1,8 +1,10 @@
 import 'package:capstone/model/tourism_recommendation.dart';
+import 'package:capstone/provider/favorite_provider.dart';
 import 'package:capstone/screen/detail/detail_page.dart';
 import 'package:capstone/style/colors.dart';
 import 'package:capstone/style/typography.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class FavoritePage extends StatefulWidget {
   const FavoritePage({super.key});
@@ -12,28 +14,17 @@ class FavoritePage extends StatefulWidget {
 }
 
 class _FavoritePageState extends State<FavoritePage> {
-  List<TourismRecommendation> _favoriteItems = [];
-  bool _isLoading = true;
-
   @override
   void initState() {
     super.initState();
-    _loadFavoriteItems();
   }
 
-  Future<void> _loadFavoriteItems() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    setState(() {
-      _favoriteItems = TourismSamples.getWisataSamples();
-      _isLoading = false;
-    });
-  }
-
-  void _removeFromFavorites(int index) {
-    setState(() {
-      _favoriteItems.removeAt(index);
-    });
+  void _removeFromFavorites(String itemName) {
+    final favoriteProvider = Provider.of<FavoriteProvider>(
+      context,
+      listen: false,
+    );
+    favoriteProvider.removeFromFavorites(itemName);
 
     // Tampilkan konfirmasi
     ScaffoldMessenger.of(context).showSnackBar(
@@ -42,14 +33,6 @@ class _FavoritePageState extends State<FavoritePage> {
         backgroundColor: AppColors.error,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        action: SnackBarAction(
-          label: 'Batal',
-          onPressed: () {
-            setState(() {
-              _favoriteItems.add(TourismSamples.getWisataSamples().first);
-            });
-          },
-        ),
       ),
     );
   }
@@ -92,11 +75,19 @@ class _FavoritePageState extends State<FavoritePage> {
           ),
         ],
       ),
-      body: _isLoading
-          ? _buildLoadingState()
-          : _favoriteItems.isEmpty
-          ? _buildEmptyState()
-          : _buildFavoriteList(),
+      body: Consumer<FavoriteProvider>(
+        builder: (context, favoriteProvider, child) {
+          if (favoriteProvider.isLoading) {
+            return _buildLoadingState();
+          }
+
+          if (favoriteProvider.favorites.isEmpty) {
+            return _buildEmptyState();
+          }
+
+          return _buildFavoriteList(favoriteProvider.favorites);
+2        },
+      ),
     );
   }
 
@@ -173,12 +164,12 @@ class _FavoritePageState extends State<FavoritePage> {
     );
   }
 
-  Widget _buildFavoriteList() {
+  Widget _buildFavoriteList(List<TourismRecommendation> favorites) {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: _favoriteItems.length,
+      itemCount: favorites.length,
       itemBuilder: (context, index) {
-        final item = _favoriteItems[index];
+        final item = favorites[index];
         return _buildFavoriteCard(item, index);
       },
     );
@@ -275,7 +266,7 @@ class _FavoritePageState extends State<FavoritePage> {
                       color: Colors.red,
                       size: 20,
                     ),
-                    onPressed: () => _removeFromFavorites(index),
+                    onPressed: () => _removeFromFavorites(item.name),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(
                       minWidth: 40,
