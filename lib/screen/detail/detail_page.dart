@@ -3,7 +3,10 @@ import 'package:capstone/widget/info_card.dart';
 import 'package:capstone/widget/nav_icon.dart';
 import 'package:capstone/widget/review_widget.dart';
 import 'package:capstone/style/colors.dart';
+import 'package:capstone/provider/favorite_provider.dart';
+import 'package:capstone/model/tourism_recommendation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 final List<String> sampleImages = [
   "assets/images/wisata.webp",
@@ -23,7 +26,6 @@ class DetailScreen extends StatefulWidget {
 
 class _DetailScreenState extends State<DetailScreen>
     with TickerProviderStateMixin {
-  bool isFavorite = false;
   int selectedImageIndex = 0;
   bool _showTitle = false;
   late PageController _pageController;
@@ -138,21 +140,29 @@ class _DetailScreenState extends State<DetailScreen>
                     ),
                   ],
                 ),
-                child: IconButton(
-                  icon: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    child: Icon(
-                      isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: isFavorite
-                          ? Colors.red
-                          : (isDarkMode ? Colors.white : AppColors.navy),
-                      key: ValueKey(isFavorite),
-                    ),
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      isFavorite = !isFavorite;
-                    });
+                child: Consumer<FavoriteProvider>(
+                  builder: (context, provider, child) {
+                    final bool isFav = provider.isFavorite(
+                      widget.destination['name'] ?? '',
+                    );
+                    return IconButton(
+                      icon: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        child: Icon(
+                          isFav ? Icons.favorite : Icons.favorite_border,
+                          color: isFav
+                              ? Colors.red
+                              : (isDarkMode ? Colors.white : AppColors.navy),
+                          key: ValueKey(isFav),
+                        ),
+                      ),
+                      onPressed: () async {
+                        final item = TourismRecommendation.fromJson(
+                          widget.destination,
+                        );
+                        await provider.toggleFavorite(item);
+                      },
+                    );
                   },
                 ),
               ),
