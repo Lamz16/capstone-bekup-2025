@@ -88,5 +88,5 @@ class MainApp extends StatelessWidget {
         },
       ),
     );
-  }8
+  }
 }

@@ -24,6 +24,7 @@ Widget buildCard(
       'category': 'Pantai',
       'description':
           'Pantai indah dengan pasir putih dan ombak yang tenang, cocok untuk keluarga.',
+      'image': 'assets/images/wisata.webp',
     },
     {
       'id': 2,
@@ -36,6 +37,7 @@ Widget buildCard(
       'category': 'Museum',
       'description':
           'Museum bersejarah yang menyimpan peninggalan perjanjian Linggarjati.',
+      'image': 'assets/images/wisata.webp',
     },
     {
       'id': 3,
@@ -48,6 +50,7 @@ Widget buildCard(
       'category': 'Sejarah',
       'description':
           'Kompleks gua buatan dengan arsitektur unik peninggalan Kesultanan Cirebon.',
+      'image': 'assets/images/wisata.webp',
     },
   ];
 
@@ -192,6 +195,7 @@ Widget buildCard(
                             address: destination['location'] as String,
                             priceRange: destination['price'] as String,
                             openHours: destination['hours'] as String,
+                            images: [destination['image'] as String],
                           );
 
                           // Toggle favorite status
