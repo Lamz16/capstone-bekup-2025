@@ -7,54 +7,11 @@ import 'package:provider/provider.dart';
 
 Widget buildCard(
   BuildContext context,
-  int index, {
+  Map<String, dynamic> destination, {
   required ThemeData theme,
   bool isDarkMode = false,
 }) {
   final isDarkMode = theme.brightness == Brightness.dark;
-  final destinations = [
-    {
-      'id': 1,
-      'name': 'Pantai Karangsong',
-      'location': 'Karangsong, Indramayu',
-      'rating': 4.5,
-      'hours': '24 Jam',
-      'price': 'Gratis',
-      'distance': '2.3 km',
-      'category': 'Pantai',
-      'description':
-          'Pantai indah dengan pasir putih dan ombak yang tenang, cocok untuk keluarga.',
-      'image': 'assets/images/wisata.webp',
-    },
-    {
-      'id': 2,
-      'name': 'Museum Linggarjati',
-      'location': 'Cilimus, Kuningan',
-      'rating': 4.2,
-      'hours': '08.00 - 16.00',
-      'price': 'Rp 5.000',
-      'distance': '15.2 km',
-      'category': 'Museum',
-      'description':
-          'Museum bersejarah yang menyimpan peninggalan perjanjian Linggarjati.',
-      'image': 'assets/images/wisata.webp',
-    },
-    {
-      'id': 3,
-      'name': 'Taman Sari Gua Sunyaragi',
-      'location': 'Kesambi, Cirebon',
-      'rating': 4.7,
-      'hours': '08.00 - 17.00',
-      'price': 'Rp 15.000',
-      'distance': '8.5 km',
-      'category': 'Sejarah',
-      'description':
-          'Kompleks gua buatan dengan arsitektur unik peninggalan Kesultanan Cirebon.',
-      'image': 'assets/images/wisata.webp',
-    },
-  ];
-
-  final destination = destinations[index % destinations.length];
 
   return GestureDetector(
     onTap: () {
