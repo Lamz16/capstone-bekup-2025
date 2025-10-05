@@ -46,6 +46,8 @@ Widget buildDescriptionSection(
   required ThemeData theme,
 }) {
   final isDark = theme.brightness == Brightness.dark;
+  final additionalInfo =
+      "\n\nSelain itu, tempat wisata ini juga menyediakan fasilitas toko souvenir yang menawarkan berbagai produk UMKM lokal, sehingga pengunjung dapat membawa pulang kenang-kenangan unik sekaligus mendukung perekonomian masyarakat setempat.";
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -58,7 +60,7 @@ Widget buildDescriptionSection(
       ),
       const SizedBox(height: 8),
       Text(
-        destination['description'],
+        destination['description'] + additionalInfo,
         style: AppTypography.caption.copyWith(
           color: isDark ? AppColors.whiteSoft : AppColors.navy,
         ),
