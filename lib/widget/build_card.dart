@@ -7,54 +7,11 @@ import 'package:provider/provider.dart';
 
 Widget buildCard(
   BuildContext context,
-  int index, {
+  Map<String, dynamic> destination, {
   required ThemeData theme,
   bool isDarkMode = false,
 }) {
   final isDarkMode = theme.brightness == Brightness.dark;
-  final destinations = [
-    {
-      'id': 1,
-      'name': 'Pantai Karangsong',
-      'location': 'Karangsong, Indramayu',
-      'rating': 4.5,
-      'hours': '24 Jam',
-      'price': 'Gratis',
-      'distance': '2.3 km',
-      'category': 'Pantai',
-      'description':
-          'Pantai indah dengan pasir putih dan ombak yang tenang, cocok untuk keluarga.',
-      'image': 'assets/images/wisata.webp',
-    },
-    {
-      'id': 2,
-      'name': 'Museum Linggarjati',
-      'location': 'Cilimus, Kuningan',
-      'rating': 4.2,
-      'hours': '08.00 - 16.00',
-      'price': 'Rp 5.000',
-      'distance': '15.2 km',
-      'category': 'Museum',
-      'description':
-          'Museum bersejarah yang menyimpan peninggalan perjanjian Linggarjati.',
-      'image': 'assets/images/wisata.webp',
-    },
-    {
-      'id': 3,
-      'name': 'Taman Sari Gua Sunyaragi',
-      'location': 'Kesambi, Cirebon',
-      'rating': 4.7,
-      'hours': '08.00 - 17.00',
-      'price': 'Rp 15.000',
-      'distance': '8.5 km',
-      'category': 'Sejarah',
-      'description':
-          'Kompleks gua buatan dengan arsitektur unik peninggalan Kesultanan Cirebon.',
-      'image': 'assets/images/wisata.webp',
-    },
-  ];
-
-  final destination = destinations[index % destinations.length];
 
   return GestureDetector(
     onTap: () {
@@ -170,56 +127,57 @@ Widget buildCard(
                       destination['name'] as String,
                     );
 
-                    return Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: GestureDetector(
-                        onTap: () async {
-                          // Create TourismRecommendation object from destination data
-                          final tourismItem = TourismRecommendation(
-                            name: destination['name'] as String,
-                            type: RecommendationType.wisata,
-                            description: destination['description'] as String,
-                            distance: destination['distance'] as String,
-                            rating: destination['rating'].toString(),
-                            address: destination['location'] as String,
-                            priceRange: destination['price'] as String,
-                            openHours: destination['hours'] as String,
-                            images: [destination['image'] as String],
-                          );
+                    return GestureDetector(
+                      onTap: () async {
+                        // Create TourismRecommendation object from destination data
+                        final tourismItem = TourismRecommendation(
+                          name: destination['name'] as String,
+                          type: RecommendationType.wisata,
+                          description: destination['description'] as String,
+                          distance: destination['distance'] as String,
+                          rating: destination['rating'].toString(),
+                          address: destination['location'] as String,
+                          priceRange: destination['price'] as String,
+                          openHours: destination['hours'] as String,
+                          images: [destination['image'] as String],
+                        );
 
-                          // Toggle favorite status
-                          await favoriteProvider.toggleFavorite(tourismItem);
+                        // Toggle favorite status
+                        await favoriteProvider.toggleFavorite(tourismItem);
 
-                          // Show feedback
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                isFavorite
-                                    ? 'Dihapus dari favorit'
-                                    : 'Ditambahkan ke favorit',
-                              ),
-                              backgroundColor: isFavorite
-                                  ? AppColors.error
-                                  : AppColors.oceanBlue,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              duration: const Duration(seconds: 2),
+                        // Show feedback
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              isFavorite
+                                  ? 'Dihapus dari favorit'
+                                  : 'Ditambahkan ke favorit',
                             ),
-                          );
-                        },
+                            backgroundColor: isFavorite
+                                ? AppColors.error
+                                : AppColors.oceanBlue,
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      },
+                      behavior: HitTestBehavior.opaque,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
                         child: Icon(
                           isFavorite ? Icons.favorite : Icons.favorite_border,
                           color: isFavorite ? Colors.red : Colors.grey.shade600,

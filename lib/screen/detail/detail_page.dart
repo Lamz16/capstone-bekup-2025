@@ -70,6 +70,23 @@ class _DetailScreenState extends State<DetailScreen>
     }
   }
 
+  String _getRecommendationType(String category) {
+    switch (category.toLowerCase()) {
+      case 'pantai':
+        return 'wisata';
+      case 'museum':
+        return 'budaya';
+      case 'gunung':
+        return 'wisata';
+      case 'sejarah':
+        return 'budaya';
+      case 'kuliner':
+        return 'kuliner';
+      default:
+        return 'wisata';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Gunakan theme dari context
@@ -157,8 +174,24 @@ class _DetailScreenState extends State<DetailScreen>
                         ),
                       ),
                       onPressed: () async {
+                        // Convert destination map to TourismRecommendation
+                        final Map<String, dynamic> convertedData = {
+                          'name': widget.destination['name'] ?? '',
+                          'type': _getRecommendationType(
+                            widget.destination['category'] ?? '',
+                          ),
+                          'description':
+                              widget.destination['description'] ?? '',
+                          'distance': widget.destination['distance'],
+                          'rating': widget.destination['rating']?.toString(),
+                          'address': widget.destination['location'],
+                          'priceRange': widget.destination['price'],
+                          'openHours': widget.destination['hours'],
+                          'images': [widget.destination['image']],
+                        };
+
                         final item = TourismRecommendation.fromJson(
-                          widget.destination,
+                          convertedData,
                         );
                         await provider.toggleFavorite(item);
                       },
