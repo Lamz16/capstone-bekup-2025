@@ -86,7 +86,7 @@ class _FavoritePageState extends State<FavoritePage> {
           }
 
           return _buildFavoriteList(favoriteProvider.favorites);
-2        },
+        },
       ),
     );
   }

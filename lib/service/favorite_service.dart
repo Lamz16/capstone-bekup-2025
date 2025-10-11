@@ -37,7 +37,7 @@ class FavoriteService {
 
       // Add new item
       final itemJson = jsonEncode(item.toJson());
-      favoritesJson.a2dd(itemJson);
+      favoritesJson.add(itemJson);
 
       return await prefs.setStringList(_favoritesKey, favoritesJson);
     } catch (e) {

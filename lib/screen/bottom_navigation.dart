@@ -19,7 +19,6 @@ class _BottomNavigationState extends State<BottomNavigation> {
   Widget build(BuildContext context) {
     final List<Widget> pages = [
       const HomeScreen(),
-      const Scaffold(),
       const FavoritePage(),
       const SettingsScreen(),
     ];
@@ -58,10 +57,6 @@ class _BottomNavigationState extends State<BottomNavigation> {
             BottomNavigationBarItem(
               icon: Icon(Icons.home, size: 22),
               label: "Beranda",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.search, size: 22),
-              label: "Cari",
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.favorite, size: 22),
