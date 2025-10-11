@@ -1,3 +1,4 @@
+import 'package:capstone/provider/gemini_provider.dart';
 import 'package:capstone/provider/theme_provider.dart';
 import 'package:capstone/screen/login/login_screen.dart';
 import 'package:capstone/service/auth_service.dart';
@@ -22,9 +23,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
 
     try {
+      // Menghapus user auth & SharedPrefs user data
       await _authService.signOut();
+
       if (mounted) {
-        // Navigate ke LoginScreen dan clear navigation stack
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const LoginScreen()),

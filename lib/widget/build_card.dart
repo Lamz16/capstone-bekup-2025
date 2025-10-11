@@ -1,4 +1,4 @@
-import 'package:capstone/model/tourism_recommendation.dart';
+import 'package:capstone/model/destination.dart';
 import 'package:capstone/provider/favorite_provider.dart';
 import 'package:capstone/screen/detail/detail_page.dart';
 import 'package:capstone/style/colors.dart';
@@ -9,9 +9,9 @@ Widget buildCard(
   BuildContext context,
   Map<String, dynamic> destination, {
   required ThemeData theme,
-  bool isDarkMode = false,
 }) {
   final isDarkMode = theme.brightness == Brightness.dark;
+  final String imagePath = destination['image'] as String;
 
   return GestureDetector(
     onTap: () {
@@ -51,13 +51,20 @@ Widget buildCard(
                   topLeft: Radius.circular(16),
                   topRight: Radius.circular(16),
                 ),
-                child: Container(
-                  height: 160,
-                  width: double.infinity,
-                  child: Image.asset(
-                    "assets/images/wisata.webp",
-                    fit: BoxFit.cover,
-                  ),
+                child: Image.asset(
+                  imagePath, 
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: Colors.grey,
+                      child: const Center(
+                        child: Icon(
+                          Icons.image_not_supported,
+                          color: Colors.white,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
               // Category badge
@@ -130,16 +137,20 @@ Widget buildCard(
                     return GestureDetector(
                       onTap: () async {
                         // Create TourismRecommendation object from destination data
-                        final tourismItem = TourismRecommendation(
+                        final tourismItem = Destination(
+                          id: destination['id'] as int,
                           name: destination['name'] as String,
                           type: RecommendationType.wisata,
                           description: destination['description'] as String,
                           distance: destination['distance'] as String,
-                          rating: destination['rating'].toString(),
-                          address: destination['location'] as String,
-                          priceRange: destination['price'] as String,
-                          openHours: destination['hours'] as String,
-                          images: [destination['image'] as String],
+                          rating: destination['rating'] as double,
+                          location: destination['location'] as String,
+                          province: destination['province'] as String,
+                          city: destination['city'] as String,
+                          category: destination['category'] as String,
+                          price: destination['price'] as String,
+                          hours: destination['hours'] as String,
+                          image: destination['image'] as String,
                         );
 
                         // Toggle favorite status

@@ -1,19 +1,16 @@
-import 'package:capstone/widget/header_section.dart';
+import 'package:capstone/model/destination.dart';
+import 'package:capstone/model/tourism_detail_data.dart';
+import 'package:capstone/widget/header_section.dart' as header;
 import 'package:capstone/widget/info_card.dart';
+import 'package:capstone/widget/review_section.dart';
+import 'package:capstone/widget/review_widget.dart' as review;
 import 'package:capstone/widget/nav_icon.dart';
-import 'package:capstone/widget/review_widget.dart';
 import 'package:capstone/style/colors.dart';
 import 'package:capstone/provider/favorite_provider.dart';
 import 'package:capstone/model/tourism_recommendation.dart';
+import 'package:capstone/widget/umkm.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-final List<String> sampleImages = [
-  "assets/images/wisata.webp",
-  "assets/images/wisata.webp",
-  "assets/images/wisata.webp",
-  "assets/images/wisata.webp",
-];
 
 class DetailScreen extends StatefulWidget {
   final Map<String, dynamic> destination;
@@ -33,6 +30,11 @@ class _DetailScreenState extends State<DetailScreen>
   late Animation<double> _fadeAnimation;
   late ScrollController _scrollController;
 
+  // Data dinamis
+  late List<Facility> facilities;
+  late List<Review> reviews;
+  late List<UmkmProduct> umkmProducts;
+
   @override
   void initState() {
     super.initState();
@@ -47,6 +49,12 @@ class _DetailScreenState extends State<DetailScreen>
     );
     _animationController.forward();
     _scrollController.addListener(_onScroll);
+
+    // Load data berdasarkan destination ID
+    final destinationId = widget.destination['id'] as int;
+    facilities = TourismDetailData.getFacilitiesByDestinationId(destinationId);
+    reviews = TourismDetailData.getReviewsByDestinationId(destinationId);
+    umkmProducts = TourismDetailData.getUmkmByDestinationId(destinationId);
   }
 
   @override
@@ -89,20 +97,20 @@ class _DetailScreenState extends State<DetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    // Gunakan theme dari context
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
+    final currentDestination = Destination.fromMap(widget.destination);
+    final List<String> displayImages = [currentDestination.image];
 
     return Scaffold(
-      backgroundColor:
-          theme.scaffoldBackgroundColor, // Gunakan theme background
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: CustomScrollView(
         controller: _scrollController,
         slivers: [
           SliverAppBar(
             expandedHeight: 400,
             pinned: true,
-            backgroundColor: theme.cardColor, // Gunakan card color dari theme
+            backgroundColor: theme.cardColor,
             elevation: 0,
             title: AnimatedOpacity(
               opacity: _showTitle ? 1.0 : 0.0,
@@ -121,9 +129,7 @@ class _DetailScreenState extends State<DetailScreen>
             leading: Container(
               margin: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: theme.cardColor.withOpacity(
-                  0.9,
-                ), // Gunakan theme card color
+                color: theme.cardColor.withOpacity(0.9),
                 borderRadius: BorderRadius.circular(15),
                 boxShadow: [
                   BoxShadow(
@@ -145,9 +151,7 @@ class _DetailScreenState extends State<DetailScreen>
               Container(
                 margin: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: theme.cardColor.withOpacity(
-                    0.9,
-                  ), // Gunakan theme card color
+                  color: theme.cardColor.withOpacity(0.9),
                   borderRadius: BorderRadius.circular(15),
                   boxShadow: [
                     BoxShadow(
@@ -174,26 +178,10 @@ class _DetailScreenState extends State<DetailScreen>
                         ),
                       ),
                       onPressed: () async {
-                        // Convert destination map to TourismRecommendation
-                        final Map<String, dynamic> convertedData = {
-                          'name': widget.destination['name'] ?? '',
-                          'type': _getRecommendationType(
-                            widget.destination['category'] ?? '',
-                          ),
-                          'description':
-                              widget.destination['description'] ?? '',
-                          'distance': widget.destination['distance'],
-                          'rating': widget.destination['rating']?.toString(),
-                          'address': widget.destination['location'],
-                          'priceRange': widget.destination['price'],
-                          'openHours': widget.destination['hours'],
-                          'images': [widget.destination['image']],
-                        };
-
-                        final item = TourismRecommendation.fromJson(
-                          convertedData,
+                        final itemToToggle = Destination.fromMap(
+                          widget.destination,
                         );
-                        await provider.toggleFavorite(item);
+                        await provider.toggleFavorite(itemToToggle);
                       },
                     );
                   },
@@ -204,7 +192,6 @@ class _DetailScreenState extends State<DetailScreen>
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // Image Gallery - tidak perlu diubah
                   PageView.builder(
                     controller: _pageController,
                     onPageChanged: (index) {
@@ -212,15 +199,15 @@ class _DetailScreenState extends State<DetailScreen>
                         selectedImageIndex = index;
                       });
                     },
-                    itemCount: sampleImages.length,
+                    itemCount: 1, // Hanya satu gambar
                     itemBuilder: (context, index) {
                       return Image.asset(
-                        sampleImages[index],
+                        // Menggunakan properti image dari Destination
+                        currentDestination.image,
                         fit: BoxFit.cover,
                       );
                     },
                   ),
-                  // Gradient overlay
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -236,30 +223,6 @@ class _DetailScreenState extends State<DetailScreen>
                       ),
                     ),
                   ),
-                  // Image indicators
-                  Positioned(
-                    bottom: 100,
-                    left: 0,
-                    right: 0,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: sampleImages.asMap().entries.map((entry) {
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          width: selectedImageIndex == entry.key ? 24 : 8,
-                          height: 8,
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(4),
-                            color: selectedImageIndex == entry.key
-                                ? Colors.white
-                                : Colors.white.withOpacity(0.4),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  // Category Badge
                   Positioned(
                     top: 100,
                     left: 20,
@@ -294,7 +257,7 @@ class _DetailScreenState extends State<DetailScreen>
             ),
           ),
 
-          // Content dengan theme colors
+          // Content
           SliverToBoxAdapter(
             child: FadeTransition(
               opacity: _fadeAnimation,
@@ -319,15 +282,29 @@ class _DetailScreenState extends State<DetailScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      buildHeaderSection(widget.destination, theme: theme),
+                      header.buildHeaderSection(
+                        widget.destination,
+                        theme: theme,
+                      ),
                       const SizedBox(height: 24),
-                      buildQuickInfoGrid(widget.destination, theme: theme),
+                      header.buildQuickInfoGrid(
+                        widget.destination,
+                        theme: theme,
+                      ),
                       const SizedBox(height: 32),
-                      buildDescriptionSection(widget.destination, theme: theme),
+                      header.buildDescriptionSection(
+                        widget.destination,
+                        theme: theme,
+                      ),
                       const SizedBox(height: 32),
-                      buildFacilitiesSection(theme: theme),
+                      header.buildFacilitiesSection(
+                        facilities: facilities,
+                        theme: theme,
+                      ),
                       const SizedBox(height: 32),
-                      buildReviewsSection(theme: theme),
+                      buildUmkmSection(products: umkmProducts, theme: theme),
+                      const SizedBox(height: 32),
+                      buildReviewsSection(reviews: reviews, theme: theme),
                     ],
                   ),
                 ),
@@ -339,7 +316,7 @@ class _DetailScreenState extends State<DetailScreen>
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: theme.cardColor, // Gunakan card color dari theme
+          color: theme.cardColor,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(25),
             topRight: Radius.circular(25),
@@ -354,7 +331,6 @@ class _DetailScreenState extends State<DetailScreen>
         ),
         child: Row(
           children: [
-            // Share Button dengan theme colors
             Container(
               width: 56,
               height: 56,
@@ -371,8 +347,6 @@ class _DetailScreenState extends State<DetailScreen>
               ),
             ),
             const SizedBox(width: 16),
-
-            // Navigate Button - tetap sama
             Expanded(
               child: Container(
                 height: 56,
@@ -423,7 +397,6 @@ class _DetailScreenState extends State<DetailScreen>
     );
   }
 
-  // Modal methods dengan theme
   void _showShareOptions() {
     final theme = Theme.of(context);
     showModalBottomSheet(
@@ -503,6 +476,27 @@ class _DetailScreenState extends State<DetailScreen>
           ],
         ),
       ),
+    );
+  }
+
+  Widget buildShareIcon(
+    IconData icon,
+    String label, {
+    required ThemeData theme,
+  }) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.oceanBlue.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: AppColors.oceanBlue, size: 28),
+        ),
+        const SizedBox(height: 8),
+        Text(label, style: theme.textTheme.bodySmall),
+      ],
     );
   }
 }

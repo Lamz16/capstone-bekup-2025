@@ -1,4 +1,4 @@
-import 'package:capstone/model/tourism_recommendation.dart';
+import 'package:capstone/model/destination.dart';
 import 'package:capstone/provider/favorite_provider.dart';
 import 'package:capstone/screen/detail/detail_page.dart';
 import 'package:capstone/style/colors.dart';
@@ -57,23 +57,6 @@ class _FavoritePageState extends State<FavoritePage> {
         centerTitle: true,
         backgroundColor: AppColors.oceanBlue,
         elevation: 0,
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 16),
-            child: IconButton(
-              icon: Icon(Icons.search, color: Colors.white, size: 24),
-              onPressed: () {
-                // Implement Fungsi Pencarian
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Fitur pencarian akan segera hadir'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
       ),
       body: Consumer<FavoriteProvider>(
         builder: (context, favoriteProvider, child) {
@@ -164,18 +147,21 @@ class _FavoritePageState extends State<FavoritePage> {
     );
   }
 
-  Widget _buildFavoriteList(List<TourismRecommendation> favorites) {
+  Widget _buildFavoriteList(List<Destination> favorites) {
+    // List dibalik untuk DESC (terbaru diatas)
+    final reversedFavorites = favorites.toList().reversed.toList();
+
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: favorites.length,
+      itemCount: reversedFavorites.length,
       itemBuilder: (context, index) {
-        final item = favorites[index];
+        final item = reversedFavorites[index];
         return _buildFavoriteCard(item, index);
       },
     );
   }
 
-  Widget _buildFavoriteCard(TourismRecommendation item, int index) {
+  Widget _buildFavoriteCard(Destination item, int index) {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
 
@@ -211,8 +197,8 @@ class _FavoritePageState extends State<FavoritePage> {
                 child: Container(
                   height: 160,
                   width: double.infinity,
-                  child: item.images != null && item.images!.isNotEmpty
-                      ? Image.asset(item.images!.first, fit: BoxFit.cover)
+                  child: item.image != null && item.image!.isNotEmpty
+                      ? Image.asset(item.image, fit: BoxFit.cover)
                       : Container(
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
@@ -318,7 +304,7 @@ class _FavoritePageState extends State<FavoritePage> {
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
-                                  item.address ?? 'Alamat tidak tersedia',
+                                  item.location ?? 'Alamat tidak tersedia',
                                   style: theme.textTheme.bodyMedium?.copyWith(
                                     color: theme.textTheme.bodyMedium?.color
                                         ?.withOpacity(0.8),
@@ -350,7 +336,7 @@ class _FavoritePageState extends State<FavoritePage> {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              item.rating!,
+                              item.rating.toString(),
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold,
@@ -383,22 +369,22 @@ class _FavoritePageState extends State<FavoritePage> {
                   spacing: 8,
                   runSpacing: 6,
                   children: [
-                    if (item.distance != null)
+                    if (item.distance.isNotEmpty)
                       _buildInfoChip(
                         Icons.location_on,
-                        item.distance!,
+                        item.distance,
                         theme: theme,
                       ),
-                    if (item.priceRange != null)
+                    if (item.price.isNotEmpty)
                       _buildInfoChip(
                         Icons.payments,
-                        item.priceRange!,
+                        item.price,
                         theme: theme,
                       ),
-                    if (item.openHours != null)
+                    if (item.hours.isNotEmpty)
                       _buildInfoChip(
                         Icons.access_time,
-                        item.openHours!,
+                        item.hours,
                         theme: theme,
                       ),
                   ],
@@ -418,15 +404,16 @@ class _FavoritePageState extends State<FavoritePage> {
                               builder: (context) => DetailScreen(
                                 destination: {
                                   'id': index,
+                                  'image': item.image,
                                   'name': item.name,
-                                  'location': item.address ?? '',
+                                  'location': item.location,
                                   'rating':
-                                      double.tryParse(item.rating ?? '0') ??
+                                      double.tryParse(item.rating.toString()) ??
                                       0.0,
-                                  'hours': item.openHours ?? '24 Jam',
-                                  'price': item.priceRange ?? 'Gratis',
-                                  'distance': item.distance ?? '0 km',
-                                  'category': item.typeDisplayName,
+                                  'hours': item.hours,
+                                  'price': item.price,
+                                  'distance': item.distance,
+                                  'category': item.category,
                                   'description': item.description,
                                 },
                               ),
