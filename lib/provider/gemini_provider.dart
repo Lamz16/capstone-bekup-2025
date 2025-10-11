@@ -1,10 +1,10 @@
-// provider/enhanced_gemini_provider.dart
 import 'package:capstone/model/chat.dart';
 import 'package:capstone/model/tourism_recommendation.dart';
+import 'package:capstone/service/location_storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:capstone/service/gemini_service.dart';
-import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 enum MessageType { text, recommendations, error, system }
 
@@ -28,21 +28,29 @@ class ChatMessage {
 
 class GeminiProvider extends ChangeNotifier {
   final GeminiService _geminiService;
+  final LocationStorageService _locationStorage = LocationStorageService();
 
   List<ChatMessage> _historyChats = [];
   List<Chat> _geminiHistory = [];
   bool _isLoading = false;
   Position? _currentLocation;
   String? _locationError;
+  bool _isLoadingLocation = false;
+
+  // Key untuk lokasi (jika ingin dihapus juga saat logout)
+  static const _locationLatKey = 'user_location_latitude';
+  static const _locationLonKey = 'user_location_longitude';
 
   GeminiProvider(this._geminiService) {
     _initializeBot();
+    _loadCachedLocation(); // Load dari cache saat init
   }
 
   List<ChatMessage> get historyChats => _historyChats;
   bool get isLoading => _isLoading;
   Position? get currentLocation => _currentLocation;
   String? get locationError => _locationError;
+  bool get isLoadingLocation => _isLoadingLocation;
 
   void _initializeBot() {
     final welcomeMessage = ChatMessage(
@@ -55,26 +63,62 @@ class GeminiProvider extends ChangeNotifier {
     _historyChats.add(welcomeMessage);
   }
 
-  Future<void> getCurrentLocation() async {
+  // Load cached location saat pertama kali buka
+  Future<void> _loadCachedLocation() async {
     try {
-      _isLoading = true;
+      _isLoadingLocation = true;
       notifyListeners();
 
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        _locationError = "Layanan lokasi tidak aktif. Silakan aktifkan GPS.";
-        _isLoading = false;
+      final cachedLocation = await _locationStorage.getCachedLocation();
+
+      if (cachedLocation != null) {
+        _currentLocation = cachedLocation;
+        _locationError = null;
+
+        final cacheAge = await _locationStorage.getCacheAgeInHours();
+        print('✅ Lokasi loaded dari cache (${cacheAge ?? 0} jam yang lalu)');
+
+        _isLoadingLocation = false;
         notifyListeners();
         return;
       }
 
+      // Jika tidak ada cache, ambil lokasi baru
+      print('ℹ️ Tidak ada cache, mengambil lokasi baru...');
+      await getCurrentLocation(showSnackbar: false);
+    } catch (e) {
+      print('❌ Error loading cached location: $e');
+      _locationError = "Gagal memuat lokasi";
+    } finally {
+      _isLoadingLocation = false;
+      notifyListeners();
+    }
+  }
+
+  // Get current location dengan parameter untuk refresh manual
+  Future<void> getCurrentLocation({bool showSnackbar = true}) async {
+    try {
+      _isLoadingLocation = true;
+      _locationError = null;
+      notifyListeners();
+
+      // Check if location service is enabled
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        _locationError = "Layanan lokasi tidak aktif. Silakan aktifkan GPS.";
+        _isLoadingLocation = false;
+        notifyListeners();
+        return;
+      }
+
+      // Check and request permission
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
           _locationError =
               "Izin lokasi ditolak. Fitur rekomendasi berbasis lokasi tidak tersedia.";
-          _isLoading = false;
+          _isLoadingLocation = false;
           notifyListeners();
           return;
         }
@@ -83,30 +127,78 @@ class GeminiProvider extends ChangeNotifier {
       if (permission == LocationPermission.deniedForever) {
         _locationError =
             "Izin lokasi ditolak permanen. Silakan aktifkan di pengaturan aplikasi.";
-        _isLoading = false;
+        _isLoadingLocation = false;
         notifyListeners();
         return;
       }
 
-      _currentLocation = await Geolocator.getCurrentPosition(
+      // Get current position
+      final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
+
+      _currentLocation = position;
       _locationError = null;
 
-      // Show success message
-      ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
-        const SnackBar(
-          content: Text('Lokasi berhasil diaktifkan'),
-          duration: Duration(seconds: 2),
-          backgroundColor: Colors.green,
-        ),
-      );
+      // Save to cache
+      // await _locationStorage.saveLocation(
+      //   position,
+      //   cityName: 'Indramayu, Jawa Barat', 
+      // );
+
+      print('✅ Lokasi berhasil diupdate dan disimpan ke cache');
+
+      // Show success message if needed
+      if (showSnackbar && navigatorKey.currentContext != null) {
+        ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
+          SnackBar(
+            content: const Text('✓ Lokasi berhasil diperbarui'),
+            duration: const Duration(seconds: 2),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      }
     } catch (e) {
       _locationError = "Gagal mendapatkan lokasi: ${e.toString()}";
+      print('❌ Error getting location: $e');
     } finally {
-      _isLoading = false;
+      _isLoadingLocation = false;
       notifyListeners();
     }
+  }
+
+  // Force refresh location (untuk tombol "Perbarui Lokasi")
+  Future<void> refreshLocation() async {
+    await getCurrentLocation(showSnackbar: true);
+  }
+
+  // Clear location cache
+  Future<void> clearLocationCache() async {
+    await _locationStorage.clearCache();
+    _currentLocation = null;
+    _locationError = null;
+    notifyListeners();
+  }
+
+  Future<void> clearAllUserData() async {
+    // Membersihkan History Chat
+    _historyChats.clear();
+    _geminiHistory.clear();
+
+    // Membersihkan Location State di memory
+    _currentLocation = null;
+    _locationError = null;
+
+    await _locationStorage.clearCache();
+
+    // Inisialisasi ulang pesan sambutan bot
+    _initializeBot();
+
+    notifyListeners();
   }
 
   // Add navigator key for snackbar
@@ -316,7 +408,7 @@ Berikan respons yang membantu dan sesuai dengan pertanyaan pengguna:
       }
     }
 
-    return recommendations.take(5).toList(); // Limit to 5 recommendations
+    return recommendations.take(5).toList();
   }
 
   bool _looksLikeRecommendation(String sentence) {
@@ -346,14 +438,12 @@ Berikan respons yang membantu dan sesuai dengan pertanyaan pengguna:
     String text,
     RecommendationType type,
   ) {
-    // Extract name (usually the first part before description)
     final parts = text.split('-');
     final name = parts[0].trim().replaceAll(RegExp(r'^\d+\.?\s*'), '');
     final description = parts.length > 1
         ? parts.skip(1).join('-').trim()
         : text;
 
-    // Estimate distance if location is available
     String? distance;
     if (_currentLocation != null) {
       distance = _estimateDistance();
@@ -367,7 +457,7 @@ Berikan respons yang membantu dan sesuai dengan pertanyaan pengguna:
           : description,
       distance: distance,
       rating: _generateRandomRating(),
-      address: 'Indonesia', // Generic address
+      address: 'Indonesia',
     );
   }
 
@@ -405,7 +495,6 @@ Berikan respons yang membantu dan sesuai dengan pertanyaan pengguna:
     if (index >= 0 && index < _historyChats.length) {
       _historyChats.removeAt(index);
 
-      // Also remove from Gemini history if it's a user message
       if (index < _geminiHistory.length) {
         _geminiHistory.removeAt(index);
       }

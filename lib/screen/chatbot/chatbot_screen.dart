@@ -23,7 +23,7 @@ class _ChatbotScreenState extends State<ChatbotScreen>
   late AnimationController _fabAnimationController;
   late Animation<double> _fabAnimation;
 
-  @override
+  @override // <-- Hapus duplikasi @override di sini
   void initState() {
     super.initState();
     _fabAnimationController = AnimationController(
@@ -36,7 +36,11 @@ class _ChatbotScreenState extends State<ChatbotScreen>
     );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _requestLocationPermission();
+      // Ambil lokasi jika belum ada yang di-load dari SharedPrefs
+      final provider = context.read<GeminiProvider>();
+      if (provider.currentLocation == null && provider.locationError == null) {
+        _requestLocationPermission();
+      }
       _fabAnimationController.forward();
     });
 
@@ -60,6 +64,7 @@ class _ChatbotScreenState extends State<ChatbotScreen>
 
   void _requestLocationPermission() {
     final provider = context.read<GeminiProvider>();
+    // mendapatkan lokasi baru
     provider.getCurrentLocation();
   }
 
@@ -367,7 +372,14 @@ class _ChatbotScreenState extends State<ChatbotScreen>
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 child: IconButton(
+                  onPressed: provider.isLoading
+                      ? null
+                      : _requestLocationPermission,
+                  tooltip: provider.currentLocation != null
+                      ? 'Lokasi aktif'
+                      : 'Aktifkan lokasi',
                   icon: Stack(
+                    alignment: Alignment.center,
                     children: [
                       Icon(
                         provider.currentLocation != null
@@ -377,8 +389,8 @@ class _ChatbotScreenState extends State<ChatbotScreen>
                             ? Colors.green
                             : (isDark ? Colors.grey[400] : Colors.grey[600]),
                       ),
-                      if (provider.isLoading &&
-                          provider.currentLocation == null)
+                      // Tampilkan loading hanya jika provider sedang mengambil lokasi
+                      if (provider.isLoading)
                         Positioned.fill(
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
@@ -389,10 +401,6 @@ class _ChatbotScreenState extends State<ChatbotScreen>
                         ),
                     ],
                   ),
-                  onPressed: _requestLocationPermission,
-                  tooltip: provider.currentLocation != null
-                      ? 'Lokasi aktif'
-                      : 'Aktifkan lokasi',
                 ),
               );
             },
@@ -409,7 +417,6 @@ class _ChatbotScreenState extends State<ChatbotScreen>
       body: SafeArea(
         child: Column(
           children: [
-            // Location Status Banner
             Consumer<GeminiProvider>(
               builder: (context, provider, _) {
                 if (provider.locationError != null) {
@@ -465,6 +472,7 @@ class _ChatbotScreenState extends State<ChatbotScreen>
                     ),
                   );
                 }
+
                 return const SizedBox.shrink();
               },
             ),
@@ -642,15 +650,23 @@ class _ChatbotScreenState extends State<ChatbotScreen>
       floatingActionButton: Consumer<GeminiProvider>(
         builder: (context, provider, _) {
           if (MediaQuery.of(context).viewInsets.bottom > 0 ||
-              provider.historyChats.length <= 1)
+              provider.historyChats.length <= 1) {
             return const SizedBox.shrink();
+          }
 
-          return ScaleTransition(
-            scale: _fabAnimation,
-            child: FloatingActionButton.small(
-              onPressed: _scrollToBottom,
-              backgroundColor: AppColors.oceanBlue,
-              child: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
+          return Padding(
+            // ⬆️ Atur jarak dari bawah biar gak nutup tombol kirim
+            padding: const EdgeInsets.only(bottom: 70.0),
+            child: ScaleTransition(
+              scale: _fabAnimation,
+              child: FloatingActionButton.small(
+                onPressed: _scrollToBottom,
+                backgroundColor: AppColors.oceanBlue,
+                child: const Icon(
+                  Icons.keyboard_arrow_down,
+                  color: Colors.white,
+                ),
+              ),
             ),
           );
         },

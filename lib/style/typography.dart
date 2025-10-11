@@ -40,6 +40,6 @@ class AppTypography {
     fontFamily: 'Inter',
     // Light
     fontWeight: FontWeight.w300,
-    fontSize: 12,
+    fontSize: 14,
   );
 }

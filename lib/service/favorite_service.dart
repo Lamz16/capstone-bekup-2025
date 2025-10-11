@@ -1,18 +1,22 @@
-import 'package:capstone/model/tourism_recommendation.dart';
+import 'package:capstone/model/destination.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 class FavoriteService {
-  static const String _favoritesKey = 'user_favorites';
+  String _getFavoritesKey(String userId) {
+    return 'user_favorites_$userId';
+  }
 
-  Future<List<TourismRecommendation>> getFavorites() async {
+  Future<List<Destination>> getFavorites(String userId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final favoritesJson = prefs.getStringList(_favoritesKey) ?? [];
+      // Gunakan key unik
+      final favoritesKey = _getFavoritesKey(userId);
+      final favoritesJson = prefs.getStringList(favoritesKey) ?? [];
 
       return favoritesJson.map((json) {
         final Map<String, dynamic> data = jsonDecode(json);
-        return TourismRecommendation.fromJson(data);
+        return Destination.fromMap(data);
       }).toList();
     } catch (e) {
       print('Error getting favorites: $e');
@@ -20,10 +24,12 @@ class FavoriteService {
     }
   }
 
-  Future<bool> addToFavorites(TourismRecommendation item) async {
+  Future<bool> addToFavorites(String userId, Destination item) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final favoritesJson = prefs.getStringList(_favoritesKey) ?? [];
+      // Gunakan kunci unik
+      final favoritesKey = _getFavoritesKey(userId);
+      final favoritesJson = prefs.getStringList(favoritesKey) ?? [];
 
       // Check if item already exists
       final existingIndex = favoritesJson.indexWhere((json) {
@@ -32,24 +38,29 @@ class FavoriteService {
       });
 
       if (existingIndex != -1) {
-        return true; 
+        return true;
       }
 
       // Add new item
-      final itemJson = jsonEncode(item.toJson());
+      final itemJson = jsonEncode(item.toMap());
       favoritesJson.add(itemJson);
 
-      return await prefs.setStringList(_favoritesKey, favoritesJson);
+      return await prefs.setStringList(
+        favoritesKey,
+        favoritesJson,
+      ); 
     } catch (e) {
       print('Error adding to favorites: $e');
       return false;
     }
   }
 
-  Future<bool> removeFromFavorites(String itemName) async {
+  Future<bool> removeFromFavorites(String userId, String itemName) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final favoritesJson = prefs.getStringList(_favoritesKey) ?? [];
+      // Gunakan kunci unik
+      final favoritesKey = _getFavoritesKey(userId);
+      final favoritesJson = prefs.getStringList(favoritesKey) ?? [];
 
       // Remove item by name
       favoritesJson.removeWhere((json) {
@@ -57,26 +68,33 @@ class FavoriteService {
         return data['name'] == itemName;
       });
 
-      return await prefs.setStringList(_favoritesKey, favoritesJson);
+      return await prefs.setStringList(
+        favoritesKey,
+        favoritesJson,
+      ); 
     } catch (e) {
       print('Error removing from favorites: $e');
       return false;
     }
   }
 
-  Future<bool> clearAllFavorites() async {
+  Future<bool> clearAllFavorites(String userId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      return await prefs.remove(_favoritesKey);
+      // Hapus hanya kunci unik user ini
+      final favoritesKey = _getFavoritesKey(userId);
+      return await prefs.remove(favoritesKey);
     } catch (e) {
       print('Error clearing favorites: $e');
       return false;
     }
   }
 
-  Future<bool> isFavorite(String itemName) async {
+  Future<bool> isFavorite(String userId, String itemName) async {
     try {
-      final favorites = await getFavorites();
+      final favorites = await getFavorites(
+        userId,
+      ); // Memanggil fungsi yang sudah diubah
       return favorites.any((item) => item.name == itemName);
     } catch (e) {
       print('Error checking favorite status: $e');

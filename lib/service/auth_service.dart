@@ -74,6 +74,12 @@ class AuthService {
 
     // Clear SharedPreferences
     final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    await prefs.remove('user_id');
+    await prefs.remove('user_name');
+    await prefs.remove('user_email');
+    await prefs.remove('user_photo');
+    await prefs.remove('is_logged_in');
+
+    await prefs.remove('user_location_latitude');
   }
 }

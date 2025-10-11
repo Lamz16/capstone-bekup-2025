@@ -60,7 +60,6 @@ class _FilterModalState extends State<FilterModal> {
 
   final List<String> _priceRanges = [
     'Gratis',
-    '< Rp 10.000',
     'Rp 10.000 - Rp 50.000',
     'Rp 50.000 - Rp 100.000',
     '> Rp 100.000',
@@ -355,7 +354,7 @@ class _FilterModalState extends State<FilterModal> {
         const SizedBox(height: 12),
         Wrap(
           spacing: 8,
-          children: [1, 2, 3, 4, 5].map((rating) {
+          children: [1, 2, 3, 4].map((rating) {
             final isSelected = _tempFilters['min_rating'] == rating.toDouble();
             return GestureDetector(
               onTap: () {
