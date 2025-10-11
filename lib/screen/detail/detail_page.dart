@@ -3,7 +3,10 @@ import 'package:capstone/widget/info_card.dart';
 import 'package:capstone/widget/nav_icon.dart';
 import 'package:capstone/widget/review_widget.dart';
 import 'package:capstone/style/colors.dart';
+import 'package:capstone/provider/favorite_provider.dart';
+import 'package:capstone/model/tourism_recommendation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 final List<String> sampleImages = [
   "assets/images/wisata.webp",
@@ -23,7 +26,6 @@ class DetailScreen extends StatefulWidget {
 
 class _DetailScreenState extends State<DetailScreen>
     with TickerProviderStateMixin {
-  bool isFavorite = false;
   int selectedImageIndex = 0;
   bool _showTitle = false;
   late PageController _pageController;
@@ -65,6 +67,23 @@ class _DetailScreenState extends State<DetailScreen>
           _showTitle = showTitle;
         });
       }
+    }
+  }
+
+  String _getRecommendationType(String category) {
+    switch (category.toLowerCase()) {
+      case 'pantai':
+        return 'wisata';
+      case 'museum':
+        return 'budaya';
+      case 'gunung':
+        return 'wisata';
+      case 'sejarah':
+        return 'budaya';
+      case 'kuliner':
+        return 'kuliner';
+      default:
+        return 'wisata';
     }
   }
 
@@ -138,21 +157,45 @@ class _DetailScreenState extends State<DetailScreen>
                     ),
                   ],
                 ),
-                child: IconButton(
-                  icon: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    child: Icon(
-                      isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: isFavorite
-                          ? Colors.red
-                          : (isDarkMode ? Colors.white : AppColors.navy),
-                      key: ValueKey(isFavorite),
-                    ),
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      isFavorite = !isFavorite;
-                    });
+                child: Consumer<FavoriteProvider>(
+                  builder: (context, provider, child) {
+                    final bool isFav = provider.isFavorite(
+                      widget.destination['name'] ?? '',
+                    );
+                    return IconButton(
+                      icon: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        child: Icon(
+                          isFav ? Icons.favorite : Icons.favorite_border,
+                          color: isFav
+                              ? Colors.red
+                              : (isDarkMode ? Colors.white : AppColors.navy),
+                          key: ValueKey(isFav),
+                        ),
+                      ),
+                      onPressed: () async {
+                        // Convert destination map to TourismRecommendation
+                        final Map<String, dynamic> convertedData = {
+                          'name': widget.destination['name'] ?? '',
+                          'type': _getRecommendationType(
+                            widget.destination['category'] ?? '',
+                          ),
+                          'description':
+                              widget.destination['description'] ?? '',
+                          'distance': widget.destination['distance'],
+                          'rating': widget.destination['rating']?.toString(),
+                          'address': widget.destination['location'],
+                          'priceRange': widget.destination['price'],
+                          'openHours': widget.destination['hours'],
+                          'images': [widget.destination['image']],
+                        };
+
+                        final item = TourismRecommendation.fromJson(
+                          convertedData,
+                        );
+                        await provider.toggleFavorite(item);
+                      },
+                    );
                   },
                 ),
               ),

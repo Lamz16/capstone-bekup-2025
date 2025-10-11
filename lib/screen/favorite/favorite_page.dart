@@ -211,14 +211,22 @@ class _FavoritePageState extends State<FavoritePage> {
                 child: Container(
                   height: 160,
                   width: double.infinity,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: item.gradientColors,
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                  ),
-                  child: const Icon(Icons.image, size: 60, color: Colors.white),
+                  child: item.images != null && item.images!.isNotEmpty
+                      ? Image.asset(item.images!.first, fit: BoxFit.cover)
+                      : Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: item.gradientColors,
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.image,
+                            size: 60,
+                            color: Colors.white,
+                          ),
+                        ),
                 ),
               ),
               // Kategori badge

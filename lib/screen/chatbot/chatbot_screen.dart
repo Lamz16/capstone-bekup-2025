@@ -641,7 +641,9 @@ class _ChatbotScreenState extends State<ChatbotScreen>
       ),
       floatingActionButton: Consumer<GeminiProvider>(
         builder: (context, provider, _) {
-          if (provider.historyChats.length <= 1) return const SizedBox.shrink();
+          if (MediaQuery.of(context).viewInsets.bottom > 0 ||
+              provider.historyChats.length <= 1)
+            return const SizedBox.shrink();
 
           return ScaleTransition(
             scale: _fabAnimation,
