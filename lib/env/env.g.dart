@@ -10,5 +10,5 @@ part of 'env.dart';
 // ignore_for_file: type=lint
 // generated_from: .env
 final class _Env {
-  static const String geminiApiKey = 'AIzaSyChlntrH4l5lMxO8XEbi9bCbNLO9p0hV9k';
+  static const String geminiApiKey = 'AIzaSyAVO0KbpI8NuxO1es7QwHoA90B8fWQSfkw';
 }
