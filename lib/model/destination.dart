@@ -209,7 +209,7 @@ const List<Map<String, dynamic>> kAllDestinations = [
     'category': 'Museum',
     'description':
         'Museum bersejarah yang menyimpan peninggalan perjanjian Linggarjati.',
-    'image': 'assets/images/museum_linggarjati.jpg',
+    'image': 'assets/images/museum-linggarjati.jpg',
   },
   {
     'id': 3,
@@ -434,7 +434,7 @@ const List<Map<String, dynamic>> kAllDestinations = [
     'category': 'Religi',
     'description':
         'Gereja Kristen tertua di Jawa Tengah dengan arsitektur khas Eropa dan kubah besar (blenduk).',
-    'image': 'assets/images/gereja-blenduk.jpg',
+    'image': 'assets/images/gereja-belenduk.jpg',
   },
   {
     'id': 18,

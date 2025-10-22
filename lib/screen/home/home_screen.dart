@@ -107,6 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
             controller: _scrollController,
             slivers: [
               SliverAppBar(
+                iconTheme: IconThemeData(color: Colors.white),
                 pinned: true,
                 floating: false,
                 snap: false,
