@@ -1055,15 +1055,6 @@ class TourismDetailData {
           verified: true,
         ),
         Review(
-          name: 'Andi Setiawan',
-          rating: 5,
-          date: '3 hari lalu',
-          comment:
-              'Pantainya bagus banget! Hutan mangrovenya keren buat foto-foto.',
-          avatar: 'AS',
-          verified: true,
-        ),
-        Review(
           name: 'Rina Maharani',
           rating: 4,
           date: '2 hari lalu',
@@ -1101,14 +1092,6 @@ class TourismDetailData {
         ),
       ],
       2: [
-        Review(
-          name: 'Siti Nurhaliza',
-          rating: 4,
-          date: '5 hari lalu',
-          comment: 'Tempat bersejarah yang terawat baik. Cocok untuk edukasi.',
-          avatar: 'SN',
-          verified: true,
-        ),
         Review(
           name: 'Siti Nurhaliza',
           rating: 4,
@@ -1164,14 +1147,6 @@ class TourismDetailData {
           verified: true,
         ),
         Review(
-          name: 'Dedi Prasetyo',
-          rating: 5,
-          date: '4 hari lalu',
-          comment: 'Arsitekturnya unik banget! Banyak spot foto instagramable.',
-          avatar: 'DP',
-          verified: true,
-        ),
-        Review(
           name: 'Rian Kurniawan',
           rating: 5,
           date: '2 hari lalu',
@@ -1208,14 +1183,6 @@ class TourismDetailData {
         ),
       ],
       4: [
-        Review(
-          name: 'Fahmi Rahman',
-          rating: 5,
-          date: '1 minggu lalu',
-          comment: 'Pendakian menantang tapi pemandangannya worth it banget!',
-          avatar: 'FR',
-          verified: true,
-        ),
         Review(
           name: 'Fahmi Rahman',
           rating: 5,
@@ -1268,14 +1235,6 @@ class TourismDetailData {
           verified: true,
         ),
         Review(
-          name: 'Dewi Lestari',
-          rating: 5,
-          date: '2 hari lalu',
-          comment: 'Candi Buddha terbesar di dunia memang tidak mengecewakan!',
-          avatar: 'DL',
-          verified: true,
-        ),
-        Review(
           name: 'Hendra Gunawan',
           rating: 4,
           date: '3 hari lalu',
@@ -1311,15 +1270,6 @@ class TourismDetailData {
         ),
       ],
       6: [
-        Review(
-          name: 'Rama Wijaya',
-          rating: 5,
-          date: '3 hari lalu',
-          comment:
-              'Pusat belanja dan kuliner Jogja! Suasana malam hari sangat meriah.',
-          avatar: 'RW',
-          verified: true,
-        ),
         Review(
           name: 'Rama Wijaya',
           rating: 5,
@@ -1375,15 +1325,6 @@ class TourismDetailData {
           verified: true,
         ),
         Review(
-          name: 'Lina Simanjuntak',
-          rating: 5,
-          date: '1 minggu lalu',
-          comment:
-              'Danau terbesar di Indonesia! Pemandangan alamnya luar biasa indah.',
-          avatar: 'LS',
-          verified: true,
-        ),
-        Review(
           name: 'Rizky Maulana',
           rating: 5,
           date: '3 hari lalu',
@@ -1427,15 +1368,6 @@ class TourismDetailData {
           verified: true,
         ),
         Review(
-          name: 'Yoga Pratama',
-          rating: 5,
-          date: '4 hari lalu',
-          comment:
-              'Kawah dengan air putih kehijauan yang unik. Suasananya sejuk!',
-          avatar: 'YP',
-          verified: true,
-        ),
-        Review(
           name: 'Fikri Andika',
           rating: 4,
           date: '3 hari lalu',
@@ -1469,15 +1401,6 @@ class TourismDetailData {
         ),
       ],
       9: [
-        Review(
-          name: 'Bella Syahputri',
-          rating: 4,
-          date: '5 hari lalu',
-          comment:
-              'Istana yang megah dengan arsitektur campuran. Sangat fotogenik!',
-          avatar: 'BS',
-          verified: true,
-        ),
         Review(
           name: 'Bella Syahputri',
           rating: 4,
@@ -1533,15 +1456,6 @@ class TourismDetailData {
           verified: true,
         ),
         Review(
-          name: 'Made Sudirman',
-          rating: 5,
-          date: '2 hari lalu',
-          comment:
-              'Sunset di Tanah Lot tidak ada duanya! Tempat yang sakral dan indah.',
-          avatar: 'MS',
-          verified: true,
-        ),
-        Review(
           name: 'Wayan Adi',
           rating: 5,
           date: '1 hari lalu',
@@ -1584,14 +1498,6 @@ class TourismDetailData {
           verified: true,
         ),
         Review(
-          name: 'Andra Kusuma',
-          rating: 4,
-          date: '6 hari lalu',
-          comment: 'Museum bersejarah di tengah Kota Tua. Bangunannya klasik!',
-          avatar: 'AK',
-          verified: true,
-        ),
-        Review(
           name: 'Rizal Fadli',
           rating: 5,
           date: '2 hari lalu',
@@ -1625,15 +1531,6 @@ class TourismDetailData {
         ),
       ],
       12: [
-        Review(
-          name: 'Komang Arya',
-          rating: 5,
-          date: '3 hari lalu',
-          comment:
-              'Tari Kecak sunset nya memukau! View tebing lautnya dramatis.',
-          avatar: 'KA',
-          verified: true,
-        ),
         Review(
           name: 'Komang Arya',
           rating: 5,
@@ -1687,15 +1584,6 @@ class TourismDetailData {
           verified: true,
         ),
         Review(
-          name: 'Fikri Hakim',
-          rating: 5,
-          date: '1 minggu lalu',
-          comment:
-              'Sunrise Bromo legendary! Lautan pasirnya spektakuler sekali.',
-          avatar: 'FH',
-          verified: true,
-        ),
-        Review(
           name: 'Rina Setiawati',
           rating: 5,
           date: '3 hari lalu',
@@ -1729,15 +1617,6 @@ class TourismDetailData {
         ),
       ],
       14: [
-        Review(
-          name: 'Dina Puspita',
-          rating: 4,
-          date: '5 hari lalu',
-          comment:
-              'Air terjun tinggi dikelilingi hutan pinus. Udara sejuk dan segar!',
-          avatar: 'DP',
-          verified: true,
-        ),
         Review(
           name: 'Dina Puspita',
           rating: 4,
@@ -1791,15 +1670,6 @@ class TourismDetailData {
           verified: true,
         ),
         Review(
-          name: 'Bimo Saputra',
-          rating: 5,
-          date: '4 hari lalu',
-          comment:
-              'Kawasan heritage Jakarta! Bangunan kolonial yang terawat bagus.',
-          avatar: 'BS',
-          verified: true,
-        ),
-        Review(
           name: 'Rina Larasati',
           rating: 4,
           date: '2 hari lalu',
@@ -1833,15 +1703,6 @@ class TourismDetailData {
         ),
       ],
       16: [
-        Review(
-          name: 'Sari Wulandari',
-          rating: 4,
-          date: '1 minggu lalu',
-          comment:
-              'Bangunan bersejarah dengan ribuan jendela. Atmosfernya mistis!',
-          avatar: 'SW',
-          verified: true,
-        ),
         Review(
           name: 'Sari Wulandari',
           rating: 4,
@@ -1895,15 +1756,6 @@ class TourismDetailData {
           verified: true,
         ),
         Review(
-          name: 'Toni Hermawan',
-          rating: 5,
-          date: '3 hari lalu',
-          comment:
-              'Gereja tertua di Jateng! Kubah besar dan arsitektur Eropa klasik.',
-          avatar: 'TH',
-          verified: true,
-        ),
-        Review(
           name: 'Rian Putra',
           rating: 5,
           date: '2 hari lalu',
@@ -1937,15 +1789,6 @@ class TourismDetailData {
         ),
       ],
       18: [
-        Review(
-          name: 'Putu Angga',
-          rating: 5,
-          date: '2 hari lalu',
-          comment:
-              'Sawah terasering UNESCO! Sistem subak yang masih tradisional.',
-          avatar: 'PA',
-          verified: true,
-        ),
         Review(
           name: 'Putu Angga',
           rating: 5,
@@ -1999,15 +1842,6 @@ class TourismDetailData {
           verified: true,
         ),
         Review(
-          name: 'Clara Natalia',
-          rating: 5,
-          date: '1 minggu lalu',
-          comment:
-              'Pantai pink yang langka! Air lautnya jernih sempurna untuk snorkeling.',
-          avatar: 'CN',
-          verified: true,
-        ),
-        Review(
           name: 'Ayu Lestari',
           rating: 5,
           date: '3 hari lalu',
@@ -2042,15 +1876,6 @@ class TourismDetailData {
         ),
       ],
       20: [
-        Review(
-          name: 'Ridwan Kamil',
-          rating: 4,
-          date: '6 hari lalu',
-          comment:
-              'Kawah aktif yang bisa didekati! Legenda Sangkuriang nya terkenal.',
-          avatar: 'RK',
-          verified: true,
-        ),
         Review(
           name: 'Ridwan Kamil',
           rating: 4,
