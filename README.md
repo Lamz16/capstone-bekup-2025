@@ -49,16 +49,14 @@ Mendukung **Light Mode** dan **Dark Mode** yang dapat disesuaikan dengan prefere
 
 <table>
   <tr>
-    <td align="center"><b>Splash Screen</b></td>
     <td align="center"><b>Login</b></td>
     <td align="center"><b>Home</b></td>
     <td align="center"><b>Chatbot</b></td>
   </tr>
   <tr>
-    <td><img src="assets/screenshots/splash.png" width="200"/></td>
-    <td><img src="assets/screenshots/login.png" width="200"/></td>
-    <td><img src="assets/screenshots/home.png" width="200"/></td>
-    <td><img src="assets/screenshots/chatbot.png" width="200"/></td>
+    <td><img src="assets/readme/login.jpg" width="200"/></td>
+    <td><img src="assets/readme/home.jpg" width="200"/></td>
+    <td><img src="assets/readme/chatbot.jpg" width="200"/></td>
   </tr>
 </table>
 
@@ -69,9 +67,9 @@ Mendukung **Light Mode** dan **Dark Mode** yang dapat disesuaikan dengan prefere
     <td align="center"><b>Pengaturan</b></td>
   </tr>
   <tr>
-    <td><img src="assets/screenshots/detail.png" width="200"/></td>
-    <td><img src="assets/screenshots/favorite.png" width="200"/></td>
-    <td><img src="assets/screenshots/settings.png" width="200"/></td>
+    <td><img src="assets/readme/detail.jpg" width="200"/></td>
+    <td><img src="assets/readme/favorit.jpg" width="200"/></td>
+    <td><img src="assets/readme/setting.jpg" width="200"/></td>
   </tr>
 </table>
 
